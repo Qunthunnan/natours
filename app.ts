@@ -1,6 +1,6 @@
 import fs from 'fs';
 import express from 'express';
-import { dirname } from 'path';
+import { request } from 'https';
 
 type Dificulty = 'easy' | 'medium' | 'difficult';
 
@@ -19,6 +19,8 @@ interface ITour {
 
 const app = express();
 
+app.use(express.json());
+
 const tours: ITour[] = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8')
 );
@@ -33,11 +35,15 @@ app.get('/api/v1/tours', (request, response) => {
   });
 });
 
+app.post('/api/v1/tours', (request, response) => {
+  console.log(request.body);
+  response.send(request.body);
+});
+
 const port = 5000;
 app.listen(port, () => {
   console.log(`API runnting on port ${port}`);
 });
-
 // interface User {
 //   login: string;
 //   name: string;
