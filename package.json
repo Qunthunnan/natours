@@ -5,16 +5,20 @@
   "description": "Learning Express and MongoDB",
   "main": "index.ts",
   "scripts": {
-    "start": "tsx app.ts --watch"
+    "start": "tsx server.ts"
   },
   "author": "Qunthunnan",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.1"
+    "express": "^4.21.1",
+    "morgan": "^1.10.0",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/morgan": "^1.9.9",
     "@types/node": "^22.7.5",
+    "@types/uuid": "^10.0.0",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3"
   }
