@@ -1,11 +1,8 @@
-import dotenv from 'dotenv';
 import express, { Response, NextFunction } from 'express';
 import { ModifiedRequest } from './types/types';
 import morgan from 'morgan';
 import { toursRouter } from './routes/toursRouter';
 import { usersRouter } from './routes/usersRouter';
-
-dotenv.config({ path: './config.env' });
 
 function addRequestTime(
   request: ModifiedRequest,
@@ -20,12 +17,15 @@ export const app = express();
 
 app.use(express.json());
 app.use(addRequestTime);
-console.log(process.env);
-if (process.env.NODE_ENV === 'development') {
+
+if (
+  process.env.NODE_ENV === 'development' ||
+  process.env.NODE_ENV === undefined
+) {
   app.use(morgan('dev'));
 }
-app.use(express.static(`${__dirname}/public/`));
 
+app.use(express.static(`${__dirname}/public/`));
 app.use('/api/v1/tours', toursRouter);
 app.use('/api/v1/users', usersRouter);
 

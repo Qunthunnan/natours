@@ -5,17 +5,19 @@ import {
   getTour,
   updateTour,
   deleteTour,
-  validateIdMiddleware,
-  validateTourMiddleware,
+  // validateIdMiddleware,
+  // validateTourMiddleware,
 } from '../controllers/toursController';
 
 export const toursRouter = express.Router();
 
-toursRouter.param('id', validateIdMiddleware);
+// toursRouter.param('id', validateIdMiddleware);
 
-toursRouter.route('/').get(getTours).post(validateTourMiddleware, createTour);
+toursRouter.route('/').get(getTours).post(createTour);
+// toursRouter.route('/').get(getTours).post(validateTourMiddleware, createTour);
 toursRouter
   .route('/:id')
   .get(getTour)
-  .patch(validateTourMiddleware, updateTour)
+  .patch(updateTour)
+  // .patch(validateTourMiddleware, updateTour)
   .delete(deleteTour);
