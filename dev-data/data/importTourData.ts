@@ -3,8 +3,12 @@ import mongoose from 'mongoose';
 import { Tour } from '../../models/tourModel';
 import { env } from '../../dotenv';
 
-if (env.parsed && 'DATABASE' in env.parsed && 'DB_PASSWORD' in env.parsed) {
-  const DB = env.parsed.DATABASE.replace(
+if (
+  env.parsed &&
+  'DATABASE_LOCAL' in env.parsed &&
+  'DB_PASSWORD' in env.parsed
+) {
+  const DB = env.parsed.DATABASE_LOCAL.replace(
     '<db_password>',
     env.parsed.DB_PASSWORD,
   );

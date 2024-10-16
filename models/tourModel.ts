@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { skip } from 'node:test';
 
 const tourSchema = new mongoose.Schema({
   name: {
@@ -59,6 +60,7 @@ const tourSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now(),
+    select: false,
   },
 });
 

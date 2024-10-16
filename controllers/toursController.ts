@@ -1,12 +1,70 @@
-import { ModifiedRequest, ITour } from '../types/types';
+import { ModifiedRequest } from '../types/types';
 import { Response, Request } from 'express';
 import { Tour } from '../models/tourModel';
-import { error } from 'console';
 
 // import fs from 'fs';
 
-export function getTours(request: ModifiedRequest, response: Response): void {
-  Tour.find({})
+export async function getTours(
+  request: ModifiedRequest,
+  response: Response,
+): Promise<void> {
+  const initialQuery = { ...request.query };
+  const excludedQueries = ['limit', 'page', 'fields', 'sort'];
+
+  excludedQueries.forEach((exluded) => {
+    delete initialQuery[exluded];
+  });
+
+  //filtering request
+  const advancedQuery = JSON.parse(
+    JSON.stringify(initialQuery).replace(
+      /\b(gte|gt|lte|lt)\b/g,
+      (match) => `$${match}`,
+    ),
+  );
+
+  let requestedQuery = Tour.find({ ...advancedQuery });
+
+  // .where('duration')
+  // .equals(5)
+  // .where('averageRating')
+  // .gte(4.8)
+
+  //sorting request
+  if (request.query.sort && typeof request.query.sort === 'string') {
+    const sortBy = request.query.sort.split(',').join(' ');
+    requestedQuery = requestedQuery.sort(sortBy);
+  } else {
+    requestedQuery = requestedQuery.sort('createdAt');
+  }
+
+  //selecting fields
+  if (request.query.fields && typeof request.query.fields === 'string') {
+    const fields = request.query.fields.split(',').join(' ');
+    requestedQuery = requestedQuery.select(fields);
+  } else {
+    requestedQuery = requestedQuery.select('-__v');
+  }
+
+  //Data pagination
+  const limit = request.query.limit ? +request.query.limit : 20;
+  const skip = request.query.page ? (+request.query.page - 1) * limit : 0;
+
+  requestedQuery = requestedQuery.skip(skip).limit(limit);
+
+  const docCountQuery = Tour.countDocuments({ ...advancedQuery });
+  const docCount = await docCountQuery;
+  console.log(`awaited, ${docCount}`);
+  if (request.query.page && skip >= docCount) {
+    response.status(404).json({
+      status: 'failure',
+      message: 'Tours not found at requested page.',
+    });
+    return undefined;
+  }
+
+  //Recieving the answer
+  requestedQuery
     .then((tours) => {
       response.status(200).json({
         status: 'success',
@@ -22,6 +80,8 @@ export function getTours(request: ModifiedRequest, response: Response): void {
         message: error.message,
       });
     });
+
+  return undefined;
 }
 
 export function createTour(request: Request, response: Response): void {
