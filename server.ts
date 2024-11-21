@@ -2,17 +2,10 @@ import mongoose from 'mongoose';
 import { env } from './dotenv';
 import { app } from './app';
 
-if (
-  env.parsed &&
-  'DATABASE_LOCAL' in env.parsed &&
-  'DB_PASSWORD' in env.parsed
-) {
+if (env.parsed && 'DATABASE' in env.parsed && 'DB_PASSWORD' in env.parsed) {
   mongoose
     .connect(
-      env.parsed.DATABASE_LOCAL.replace(
-        '<db_password>',
-        env.parsed.DB_PASSWORD,
-      ),
+      env.parsed.DATABASE.replace('<db_password>', env.parsed.DB_PASSWORD),
     )
     .then((con) => {
       console.log('DB Connectend!');

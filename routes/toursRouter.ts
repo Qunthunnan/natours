@@ -5,6 +5,7 @@ import {
   getTour,
   updateTour,
   deleteTour,
+  topCheapTours,
   // validateIdMiddleware,
   // validateTourMiddleware,
 } from '../controllers/toursController';
@@ -12,6 +13,8 @@ import {
 export const toursRouter = express.Router();
 
 // toursRouter.param('id', validateIdMiddleware);
+
+toursRouter.route('/top5-cheap').get(topCheapTours, getTours);
 
 toursRouter.route('/').get(getTours).post(createTour);
 // toursRouter.route('/').get(getTours).post(validateTourMiddleware, createTour);

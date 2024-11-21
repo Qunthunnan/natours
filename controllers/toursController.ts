@@ -1,70 +1,103 @@
 import { ModifiedRequest } from '../types/types';
-import { Response, Request } from 'express';
+import { Response, Request, NextFunction } from 'express';
 import { Tour } from '../models/tourModel';
+import { ApiFeatures } from '../utils/apiFeatures';
+import { ITour } from '../types/types';
 
 // import fs from 'fs';
+
+export function topCheapTours(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): void {
+  const query = request.query;
+  query.sort = '-ratingsAverage,price';
+  query.limit = '5';
+  next();
+}
 
 export async function getTours(
   request: ModifiedRequest,
   response: Response,
 ): Promise<void> {
-  const initialQuery = { ...request.query };
-  const excludedQueries = ['limit', 'page', 'fields', 'sort'];
+  // //filtering request
+  //   const initialQuery = { ...request.query };
+  //   const excludedQueries = ['limit', 'page', 'fields', 'sort'];
 
-  excludedQueries.forEach((exluded) => {
-    delete initialQuery[exluded];
-  });
+  //   excludedQueries.forEach((exluded) => {
+  //     delete initialQuery[exluded];
+  //   });
 
-  //filtering request
-  const advancedQuery = JSON.parse(
-    JSON.stringify(initialQuery).replace(
-      /\b(gte|gt|lte|lt)\b/g,
-      (match) => `$${match}`,
-    ),
-  );
+  //   const advancedQuery = JSON.parse(
+  //     JSON.stringify(initialQuery).replace(
+  //       /\b(gte|gt|lte|lt)\b/g,
+  //       (match) => `$${match}`,
+  //     ),
+  //   );
 
-  let requestedQuery = Tour.find({ ...advancedQuery });
+  //   let requestedQuery = Tour.find({ ...advancedQuery });
 
-  // .where('duration')
-  // .equals(5)
-  // .where('averageRating')
-  // .gte(4.8)
+  //   // .where('duration')
+  //   // .equals(5)
+  //   // .where('averageRating')
+  //   // .gte(4.8)
 
-  //sorting request
-  if (request.query.sort && typeof request.query.sort === 'string') {
-    const sortBy = request.query.sort.split(',').join(' ');
-    requestedQuery = requestedQuery.sort(sortBy);
-  } else {
-    requestedQuery = requestedQuery.sort('createdAt');
-  }
+  //   //sorting request
+  //   if (request.query.sort && typeof request.query.sort === 'string') {
+  //     const sortBy = request.query.sort.split(',').join(' ');
+  //     requestedQuery = requestedQuery.sort(sortBy);
+  //   } else {
+  //     requestedQuery = requestedQuery.sort('-createdAt');
+  //   }
 
-  //selecting fields
-  if (request.query.fields && typeof request.query.fields === 'string') {
-    const fields = request.query.fields.split(',').join(' ');
-    requestedQuery = requestedQuery.select(fields);
-  } else {
-    requestedQuery = requestedQuery.select('-__v');
-  }
+  //   //selecting fields
+  //   if (request.query.fields && typeof request.query.fields === 'string') {
+  //     const fields = request.query.fields.split(',').join(' ');
+  //     requestedQuery = requestedQuery.select(fields);
+  //   } else {
+  //     requestedQuery = requestedQuery.select('-__v');
+  //   }
 
-  //Data pagination
-  const limit = request.query.limit ? +request.query.limit : 20;
-  const skip = request.query.page ? (+request.query.page - 1) * limit : 0;
+  //   //Data pagination
+  //   const limit = request.query.limit ? +request.query.limit : 20;
+  //   const skip = request.query.page ? (+request.query.page - 1) * limit : 0;
 
-  requestedQuery = requestedQuery.skip(skip).limit(limit);
+  //   requestedQuery = requestedQuery.skip(skip).limit(limit);
 
-  const docCountQuery = Tour.countDocuments({ ...advancedQuery });
-  const docCount = await docCountQuery;
-  console.log(`awaited, ${docCount}`);
-  if (request.query.page && skip >= docCount) {
-    response.status(404).json({
-      status: 'failure',
-      message: 'Tours not found at requested page.',
-    });
-    return undefined;
-  }
+  //   const docCountQuery = Tour.countDocuments({ ...advancedQuery });
+  //   const docCount = await docCountQuery;
+
+  //   if (request.query.limit && limit > 100) {
+  //     response.status(400).json({
+  //       status: 'failure',
+  //       message:
+  //         'Limit value is wrong. A maximum of 100 values ​​are allowed to be requested',
+  //     });
+  //     return undefined;
+  //   }
+
+  //   if (request.query.page && skip >= docCount) {
+  //     response.status(404).json({
+  //       status: 'failure',
+  //       message: 'Tours not found at requested page.',
+  //     });
+  //     return undefined;
+  //   }
+
+  // executing
+
+  const features = new ApiFeatures<typeof Tour, ITour>(
+    Tour.find(),
+    request.query,
+  )
+    .filter()
+    .pagination()
+    .select()
+    .sort();
 
   //Recieving the answer
-  requestedQuery
+  features.query
     .then((tours) => {
       response.status(200).json({
         status: 'success',
