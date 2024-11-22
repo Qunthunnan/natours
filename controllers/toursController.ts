@@ -86,11 +86,9 @@ export async function getTours(
   //   }
 
   // executing
+  Tour.find();
 
-  const features = new ApiFeatures<typeof Tour, ITour>(
-    Tour.find(),
-    request.query,
-  )
+  const features = new ApiFeatures<typeof Tour>(Tour.find(), request.query)
     .filter()
     .pagination()
     .select()
@@ -179,6 +177,41 @@ export function deleteTour(request: Request, response: Response): void {
         message: error.message,
       });
     });
+}
+
+export async function getTourStatistics(
+  request: Request,
+  response: Response,
+): Promise<void> {
+  try {
+    const query = await Tour.aggregate([
+      {
+        $match: { ratingsAverage: { $gte: 4.6 } },
+      },
+      {
+        $group: {
+          _id: '$difficulty',
+          summPrice: { $sum: '$price' },
+          averagePrice: { $avg: '$price' },
+          averageRating: { $avg: '$ratingsAverage' },
+          ratingsCount: { $sum: '$ratingsQuantity' },
+        },
+      },
+      {
+        $match: { _id: { $ne: 'easy' } },
+      },
+    ]);
+
+    response.status(200).send({ query });
+  } catch (error) {
+    let message = 'Server error';
+    if (error instanceof Error) message = error.message;
+
+    response.status(500);
+    response.send({
+      message,
+    });
+  }
 }
 
 // const tours: ITour[] = JSON.parse(

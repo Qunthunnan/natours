@@ -1,15 +1,14 @@
-import { request } from 'http';
-import { Model, Query, QueryOptions } from 'mongoose';
+import { Query, QueryOptions } from 'mongoose';
 
-export class ApiFeatures<Model, Interface> {
-  query: Query<Model[], Interface>;
+export class ApiFeatures<T> {
+  query: Query<T[], T>;
   queryString: QueryOptions;
-  constructor(query: Query<Model[], Interface>, queryString: QueryOptions) {
+  constructor(query: Query<T[], T>, queryString: QueryOptions) {
     this.query = query;
     this.queryString = queryString;
   }
 
-  filter(): ApiFeatures<Model, Interface> {
+  filter(): ApiFeatures<T> {
     const initialQuery = { ...this.queryString };
     const excludedQueries = ['limit', 'page', 'fields', 'sort'];
 
@@ -24,11 +23,11 @@ export class ApiFeatures<Model, Interface> {
       ),
     );
 
-    this.query.find({ advancedQuery });
+    this.query.find({ ...advancedQuery });
     return this;
   }
 
-  sort(): ApiFeatures<Model, Interface> {
+  sort(): ApiFeatures<T> {
     if (this.queryString.sort && typeof this.queryString.sort === 'string') {
       const sortBy = this.queryString.sort.split(',').join(' ');
       this.query = this.query.sort(sortBy);
@@ -38,7 +37,7 @@ export class ApiFeatures<Model, Interface> {
     return this;
   }
 
-  select(): ApiFeatures<Model, Interface> {
+  select(): ApiFeatures<T> {
     if (
       this.queryString.fields &&
       typeof this.queryString.fields === 'string'
@@ -51,7 +50,7 @@ export class ApiFeatures<Model, Interface> {
     return this;
   }
 
-  pagination(): ApiFeatures<Model, Interface> {
+  pagination(): ApiFeatures<T> {
     const limit = this.queryString.limit ? +this.queryString.limit : 20;
     const skip = this.queryString.page
       ? (+this.queryString.page - 1) * limit
