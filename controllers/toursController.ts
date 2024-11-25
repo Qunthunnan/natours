@@ -214,6 +214,59 @@ export async function getTourStatistics(
   }
 }
 
+export async function getYearToursStats(
+  request: Request,
+  response: Response,
+): Promise<void> {
+  const { year } = request.params;
+
+  try {
+    const result = await Tour.aggregate([
+      {
+        $unwind: '$startDates',
+      },
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}.01.01`),
+            $lt: new Date(`${year + 1}.01.01`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$startDates' },
+          tourCount: { $sum: 1 },
+          tours: { $push: '$name' },
+        },
+      },
+      {
+        $addFields: {
+          month: '$_id',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+      {
+        $sort: { tourCount: -1 },
+      },
+    ]);
+
+    response.status(200).send(result);
+  } catch (error) {
+    let message = 'Server error';
+    if (error instanceof Error) message = error.message;
+
+    response.status(500);
+    response.send({
+      message,
+    });
+  }
+}
+
 // const tours: ITour[] = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8')
 // );
