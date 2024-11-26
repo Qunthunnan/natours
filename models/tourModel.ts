@@ -1,4 +1,6 @@
-import mongoose from 'mongoose';
+import { time } from 'console';
+import mongoose, { Query } from 'mongoose';
+import { CallbackWithoutResultAndOptionalError, Aggregate } from 'mongoose';
 import { skip } from 'node:test';
 
 const tourSchema = new mongoose.Schema(
@@ -63,6 +65,10 @@ const tourSchema = new mongoose.Schema(
       default: Date.now(),
       select: false,
     },
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
@@ -70,5 +76,48 @@ const tourSchema = new mongoose.Schema(
 tourSchema.virtual('durationByWeeks').get(function () {
   return this.duration / 7;
 });
+
+tourSchema.pre('save', function (next) {
+  this.createdAt = new Date(new Date().getTime() + 7200000);
+  next();
+});
+
+tourSchema.post('save', function (document, next) {
+  console.log(document);
+  next();
+});
+
+let startTimer = Date.now();
+
+function findPreMiddleware(
+  this: Query<typeof Tour, typeof Tour>,
+  next: CallbackWithoutResultAndOptionalError,
+): void {
+  startTimer = Date.now();
+  this.find({ secretTour: { $ne: true } });
+  next();
+}
+
+function findPostMiddleware(
+  docs: Query<typeof Tour, typeof Tour>[],
+  next: CallbackWithoutResultAndOptionalError,
+): void {
+  console.log(`Request time: ${Date.now() - startTimer}`);
+  next();
+}
+
+function aggregatePreMiddleware(
+  this: Aggregate<typeof Tour>,
+  next: CallbackWithoutResultAndOptionalError,
+): void {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  next();
+}
+
+tourSchema.pre(/^find/, findPreMiddleware);
+
+tourSchema.post(/^find/, findPostMiddleware);
+
+tourSchema.pre('aggregate', aggregatePreMiddleware);
 
 export const Tour = mongoose.model('Tour', tourSchema);
