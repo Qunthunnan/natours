@@ -2,12 +2,16 @@ import { time } from 'console';
 import mongoose, { Query } from 'mongoose';
 import { CallbackWithoutResultAndOptionalError, Aggregate } from 'mongoose';
 import { skip } from 'node:test';
+import { validate } from 'uuid';
+import { ITour } from '../types/types';
 
 const tourSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: [true, 'Name is required'],
+      minLength: [3, 'Name of tour must have more or equal to 3 characters'],
+      maxLength: [50, 'Name of tour must have less or equal to 50 characters'],
       unique: true,
       trim: true,
     },
@@ -27,6 +31,8 @@ const tourSchema = new mongoose.Schema(
     ratingsAverage: {
       type: Number,
       default: 0,
+      min: [0, 'Minimal average rating must be more or equal to zero'],
+      max: [5, 'Maximal average rating must be less or equal to 5'],
     },
     ratingsQuantity: {
       type: Number,
@@ -36,6 +42,7 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Price is required'],
     },
+
     summary: {
       type: String,
       required: [true, 'Summary is required'],
@@ -59,7 +66,15 @@ const tourSchema = new mongoose.Schema(
       type: [Date],
       required: [true, 'Start dates is required'],
     },
-    priceDiscount: Number,
+    priceDiscount: {
+      type: Number,
+      validate: {
+        validator: function (this: ITour, val: Number): boolean {
+          return val < this.price;
+        },
+        message: 'Discount price ({VALUE}) must be less than original price',
+      },
+    },
     createdAt: {
       type: Date,
       default: Date.now(),

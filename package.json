@@ -5,7 +5,8 @@
   "description": "Learning Express and MongoDB",
   "main": "index.ts",
   "scripts": {
-    "start": "tsx server.ts"
+    "start": "tsx server.ts",
+    "debug": "npx ndb tsx server.ts"
   },
   "author": "Qunthunnan",
   "license": "ISC",

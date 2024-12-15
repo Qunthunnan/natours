@@ -5,16 +5,18 @@ export type Dificulty = 'easy' | 'medium' | 'difficult';
 export type Role = 'admin' | 'user' | 'guide' | 'lead-guide';
 
 export interface ITour {
-  id: number;
-  name: string;
-  duration: number;
-  maxGroupSize: number;
+  id: Number;
+  name: String;
+  duration: Number;
+  maxGroupSize: Number;
   difficulty: Dificulty;
-  summary: string;
-  description: string;
-  imageCover: string;
-  images: string[];
-  startDates: string[];
+  summary: String;
+  description: String;
+  imageCover: String;
+  images: String[];
+  startDates: String[];
+  price: Number;
+  priceDiscount: Number;
 }
 
 export interface ModifiedRequest extends Request {
