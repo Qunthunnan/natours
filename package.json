@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "tsconfig": "tsconfig.json",
   "description": "Learning Express and MongoDB",
-  "main": "index.ts",
+  "main": "server.ts",
   "scripts": {
     "start": "tsx server.ts",
     "debug": "npx ndb tsx server.ts"

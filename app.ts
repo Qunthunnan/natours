@@ -3,6 +3,7 @@ import { ModifiedRequest } from './types/types';
 import morgan from 'morgan';
 import { toursRouter } from './routes/toursRouter';
 import { usersRouter } from './routes/usersRouter';
+import { errorHandler, unknownRouteError } from './controllers/errorsHadler';
 
 function addRequestTime(
   request: ModifiedRequest,
@@ -28,6 +29,12 @@ if (
 app.use(express.static(`${__dirname}/public/`));
 app.use('/api/v1/tours', toursRouter);
 app.use('/api/v1/users', usersRouter);
+
+//error handling
+
+app.all('*', unknownRouteError);
+
+app.use(errorHandler);
 
 // app.route('/api/v1/tours').get(getTours).post(createTour);
 // app
